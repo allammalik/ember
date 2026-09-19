@@ -5,7 +5,8 @@
 
   var canvas = document.getElementById('scene');
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  var MOBILE = window.innerWidth < 760;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, MOBILE ? 1.75 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -13,7 +14,14 @@
 
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0, 10);
+  var SEG = MOBILE ? 48 : 96;
+  var portrait = window.innerHeight > window.innerWidth;
+  function applyOrientation() {
+    portrait = window.innerHeight > window.innerWidth;
+    camera.position.z = portrait ? 12.5 : (window.innerWidth < 1024 ? 11 : 10);
+  }
+  applyOrientation();
+  camera.position.set(0, 0, camera.position.z);
 
   /* ---------- environment: dark room with bright streaks for glass highlights ---------- */
   function makeEnvTexture() {
@@ -73,7 +81,7 @@
   layGroup.add(bottle);
   rollGroup.add(layGroup);
   scene.add(rollGroup);
-  layGroup.rotation.z = -Math.PI / 2;  // +Y -> +X (neck points right)
+  layGroup.rotation.z = portrait ? 0 : -Math.PI / 2;  // upright on portrait, laid horizontal otherwise
 
   var profile = [
     [0.00, 0.00], [0.50, 0.00], [0.82, 0.02], [0.95, 0.12], [1.00, 0.32],
@@ -84,7 +92,7 @@
     [0.00, 6.95]
   ].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
 
-  var glassGeo = new THREE.LatheGeometry(profile, 96);
+  var glassGeo = new THREE.LatheGeometry(profile, SEG);
   glassGeo.translate(0, -3.475, 0);
   var glassMat = new THREE.MeshPhysicalMaterial({
     color: 0x2b1206,
@@ -97,8 +105,44 @@
   });
   bottle.add(new THREE.Mesh(glassGeo, glassMat));
 
-  /* label wrapped on the body; artwork transposed so type reads along the axis */
-  function makeLabelTexture() {
+  /* ---------- liquid inside the glass ---------- */
+  var liquidProfile = [
+    [0.00, 0.22], [0.70, 0.22], [0.87, 0.45],
+    [0.87, 3.90], [0.00, 3.90]
+  ].map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+  var liquidGeo = new THREE.LatheGeometry(liquidProfile, SEG);
+  liquidGeo.translate(0, -3.475, 0);
+  var liquidMat = new THREE.MeshPhysicalMaterial({
+    color: 0x93390d,
+    roughness: 0.2,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.25,
+    envMapIntensity: 1.6
+  });
+  bottle.add(new THREE.Mesh(liquidGeo, liquidMat));
+
+  /* ---------- wax cap + accent ring on the neck ---------- */
+  var capGeo = new THREE.CylinderGeometry(0.368, 0.378, 0.62, SEG);
+  var capMat = new THREE.MeshPhysicalMaterial({
+    color: 0x1a0c05,
+    roughness: 0.3,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.15,
+    envMapIntensity: 1.8
+  });
+  var cap = new THREE.Mesh(capGeo, capMat);
+  cap.position.y = 3.16;
+  bottle.add(cap);
+
+  var ringGeo = new THREE.TorusGeometry(0.365, 0.022, 12, SEG);
+  var ring = new THREE.Mesh(ringGeo, new THREE.MeshBasicMaterial({ color: ACCENT }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 2.79;
+  bottle.add(ring);
+
+  /* label wrapped on the body; artwork transposed for the laid bottle so the
+     type reads along the axis, straight for the upright portrait bottle */
+  function makeLabelArt() {
     var off = document.createElement('canvas');
     off.width = 2048; off.height = 1024;
     var g = off.getContext('2d');
@@ -123,23 +167,33 @@
     g.lineWidth = 4;
     g.beginPath(); g.arc(1024, 880, 40, 0, Math.PI * 2); g.stroke();
     g.beginPath(); g.moveTo(956, 880); g.lineTo(1092, 880); g.stroke();
+    return off;
+  }
 
+  function wrapTexture(off, transposed) {
     var c = document.createElement('canvas');
-    c.width = 2048; c.height = 2048;
     var ctx = c.getContext('2d');
-    // cylinder uv: x wraps around, y runs along the axis -> transpose the
-    // artwork so the type reads along the bottle's length
-    ctx.setTransform(0, -1, 1, 0, 512, 2048);
+    if (transposed) {
+      // cylinder uv: x wraps around, y runs along the axis -> transpose the
+      // artwork so the type reads along the bottle's length
+      c.width = 2048; c.height = 2048;
+      ctx.setTransform(0, -1, 1, 0, 512, 2048);
+    } else {
+      c.width = 2048; c.height = 1024;
+    }
     ctx.drawImage(off, 0, 0);
-
     var tex = new THREE.CanvasTexture(c);
     tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = 8;
     return tex;
   }
 
+  var labelArt = makeLabelArt();
+  var texLaid = wrapTexture(labelArt, true);
+  var texUpright = wrapTexture(labelArt, false);
+
   var labelMat = new THREE.MeshPhysicalMaterial({
-    map: makeLabelTexture(),
+    map: portrait ? texUpright : texLaid,
     transparent: true,
     roughness: 0.3,
     clearcoat: 1.0,
@@ -147,7 +201,7 @@
     envMapIntensity: 1.1,
     side: THREE.FrontSide
   });
-  var labelGeo = new THREE.CylinderGeometry(1.015, 1.015, 2.1, 96, 1, true);
+  var labelGeo = new THREE.CylinderGeometry(1.015, 1.015, 2.1, SEG, 1, true);
   var label = new THREE.Mesh(labelGeo, labelMat);
   label.position.y = -1.175;   // centred on the body
   label.rotation.y = Math.PI;  // face the camera at rest
@@ -177,10 +231,11 @@
   });
 
   /* ---------- scroll-driven roll ---------- */
-  var target = 0, current = 0;
+  var target = 0, current = 0, scrollPx = 0;
   function readScroll() {
     var max = document.documentElement.scrollHeight - window.innerHeight;
-    target = max > 0 ? window.scrollY / max : 0;
+    scrollPx = window.scrollY;
+    target = max > 0 ? scrollPx / max : 0;
   }
   window.addEventListener('scroll', readScroll, { passive: true });
   readScroll();
@@ -192,19 +247,37 @@
   });
 
   var clock = new THREE.Clock();
+  var lastDim = 1;
 
   function tick() {
     requestAnimationFrame(tick);
     var t = clock.getElapsedTime();
 
     current += (target - current) * 0.07;
+
+    /* portrait: sink the bottle into the background once past the hero so
+       full-width copy stays readable over it */
+    if (portrait) {
+      var p = scrollPx / window.innerHeight;
+      var dim = p < 0.8 ? 1 : Math.max(0.28, 1 - (p - 0.8) * 1.1);
+      if (Math.abs(dim - lastDim) > 0.01) {
+        canvas.style.opacity = dim;
+        lastDim = dim;
+      }
+    }
     camX += (mouseX * 0.5 - camX) * 0.05;
     camY += (-mouseY * 0.35 - camY) * 0.05;
     camera.position.x = camX;
     camera.position.y = camY;
     camera.lookAt(0, 0, 0);
 
-    rollGroup.rotation.x = current * Math.PI * 5 + Math.sin(t * 0.4) * 0.03;
+    if (portrait) {
+      rollGroup.rotation.y = current * Math.PI * 4 + t * 0.05;
+      rollGroup.rotation.x = Math.sin(t * 0.4) * 0.03;
+    } else {
+      rollGroup.rotation.x = current * Math.PI * 5 + Math.sin(t * 0.4) * 0.03 + t * 0.05;
+      rollGroup.rotation.y = 0;
+    }
     rollGroup.position.y = Math.sin(current * Math.PI * 2) * 0.25;
     layGroup.rotation.y = Math.sin(current * Math.PI * 3) * 0.12;
 
@@ -220,6 +293,14 @@
 
   window.addEventListener('resize', function () {
     camera.aspect = window.innerWidth / window.innerHeight;
+    var wasPortrait = portrait;
+    applyOrientation();
+    if (wasPortrait !== portrait) {
+      layGroup.rotation.z = portrait ? 0 : -Math.PI / 2;
+      labelMat.map = portrait ? texUpright : texLaid;
+      labelMat.needsUpdate = true;
+      if (!portrait) { canvas.style.opacity = 1; lastDim = 1; }
+    }
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
@@ -288,7 +369,22 @@
   document.getElementById('cartBtn').addEventListener('click', openDrawer);
   document.getElementById('drawerClose').addEventListener('click', closeDrawer);
   scrim.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeDrawer(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDrawer(); closeMenu(); } });
+
+  /* ---------- mobile menu ---------- */
+  var siteHead = document.querySelector('.site-head');
+  var menuBtn = document.getElementById('menuBtn');
+  function closeMenu() {
+    siteHead.classList.remove('nav-open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+  menuBtn.addEventListener('click', function () {
+    var open = siteHead.classList.toggle('nav-open');
+    menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.querySelectorAll('.site-head nav a').forEach(function (a) {
+    a.addEventListener('click', closeMenu);
+  });
 
   drawerBody.addEventListener('click', function (e) {
     var inc = e.target.getAttribute && e.target.getAttribute('data-inc');
