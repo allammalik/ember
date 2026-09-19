@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EMBER — Cold-Smoked Herbal Aperitivo | LODESTAR</title>
+<meta name="description" content="Ember is a cold-smoked herbal aperitivo from Lodestar. Juniper, oak and burnt orange, bottled at 18% ABV.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<header class="site-head">
+  <a class="logo" href="#top">LODESTAR</a>
+  <nav>
+    <a href="#pour">The Pour</a>
+    <a href="#smoke">The Smoke</a>
+    <a href="#stockists">Stockists</a>
+    <a href="#notes">Notes</a>
+  </nav>
+  <button class="cart" id="cartBtn" type="button">Bag&nbsp;&nbsp;<span id="cartCount">0</span></button>
+</header>
+
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <span class="drawer-title">Your Bag</span>
+    <button class="drawer-close" id="drawerClose" type="button" aria-label="Close bag">&times;</button>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <p class="drawer-empty">Nothing in here yet. The fire is lit, though.</p>
+  </div>
+  <div class="drawer-foot">
+    <div class="drawer-total"><span>Subtotal</span><span id="cartTotal">&euro;0</span></div>
+    <button class="btn accent wide" id="checkoutBtn" type="button">Checkout</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast"></div>
+
+<canvas id="scene" aria-hidden="true"></canvas>
+
+<main id="top">
+
+  <section class="hero">
+    <h1 class="hero-word display">EMBER</h1>
+
+    <div class="hero-ui">
+      <div class="stamp" aria-hidden="true">
+        <span>SMALL</span><span>BATCH</span><span>07</span>
+      </div>
+
+      <div class="hero-copy">
+        <p class="body">Ember is a cold-smoked herbal aperitivo. Juniper and oak over a slow fire, finished with burnt orange peel. Bitter up front, warm at the back. Pour it over ice and take your time.</p>
+        <div class="hero-cta">
+          <button class="btn accent" type="button" data-add="ember">Get a Bottle</button>
+          <a class="btn ghost" href="#notes">Read the Tasting Notes</a>
+        </div>
+      </div>
+
+      <span class="scroll-hint">Scroll — it turns</span>
+    </div>
+  </section>
+
+  <div class="overlay">
+
+    <section class="sec left">
+      <span class="idx">01</span>
+      <h2 class="display outline outline-big rv">Yes, it's<br>meant to<br>linger.</h2>
+    </section>
+
+    <section class="sec right" id="pour">
+      <div class="block rv">
+        <span class="idx">02</span>
+        <span class="label">The Pour</span>
+        <h2 class="display solid">Smoke and<br>Citrus</h2>
+        <p class="body">Sugar would hide it. Ember leads with charred orange and gentian, settles into a resinous middle of juniper and bay, then closes dry and faintly sweet — like the last minute of a fire.</p>
+      </div>
+    </section>
+
+    <section class="sec center">
+      <h2 class="display outline outline-big rv">Raised over<br>slow fire.</h2>
+    </section>
+
+    <section class="sec left" id="smoke">
+      <div class="block rv">
+        <span class="idx">03</span>
+        <span class="label">The Smoke</span>
+        <h2 class="display solid">Juniper<br>and Oak</h2>
+        <p class="body">Fourteen botanicals, cold-smoked for six hours over fallen oak. No colouring, no syrup, no hurry. What goes in the bottle is what came off the fire.</p>
+      </div>
+    </section>
+
+    <section class="sec right">
+      <h2 class="display outline outline-big rv">No shortcuts.<br>No syrup.</h2>
+    </section>
+
+    <section class="sec left">
+      <div class="block rv">
+        <span class="idx">04</span>
+        <span class="label">The Ritual</span>
+        <h2 class="display solid">Over Ice,<br>Always</h2>
+        <p class="body">One big cube, a strip of orange peel, nothing else. If the evening runs long, top it with soda — it holds its shape either way.</p>
+      </div>
+    </section>
+
+    <section class="sec notes-sec" id="notes">
+      <div class="notes">
+        <div class="rv">
+          <span class="idx">05</span>
+          <h2 class="display solid">Batch<br>07</h2>
+        </div>
+        <div class="notes-list rv">
+          <div class="note">
+            <h3>Smoked and Bright</h3>
+            <p class="body">Gentian and cinchona carry the weight; burnt orange and bay lift the top.</p>
+          </div>
+          <div class="note">
+            <h3>Cold and Clean</h3>
+            <p class="body">Best at four degrees. Warm, the smoke turns heavy — that is not the drink.</p>
+          </div>
+          <div class="note">
+            <h3>Long and Slow</h3>
+            <p class="body">Top with soda after the first hour. It stays interesting to the last pour.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec stock-sec" id="stockists">
+      <div class="stock rv">
+        <span class="idx">06</span>
+        <span class="label">Stockists</span>
+        <div class="stock-grid">
+          <div class="stock-col">
+            <h4>North</h4>
+            <ul>
+              <li>Halden Vin &amp; Brennevin — Oslo</li>
+              <li>Norrdryck — Stockholm</li>
+              <li>Kaski Cellar — Helsinki</li>
+            </ul>
+          </div>
+          <div class="stock-col">
+            <h4>West</h4>
+            <ul>
+              <li>The Smoke Shelf — Bristol</li>
+              <li>Maison Fer — Lyon</li>
+              <li>Bodega Umbral — Bilbao</li>
+            </ul>
+          </div>
+          <div class="stock-col">
+            <h4>South</h4>
+            <ul>
+              <li>Fornace Liquori — Torino</li>
+              <li>Stanza Amara — Palermo</li>
+              <li>Kapnos &amp; Co — Thessaloniki</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec center final">
+      <div class="rv">
+        <h2 class="display outline outline-big">Take it<br>slow.</h2>
+        <button class="btn accent" type="button" data-add="ember">Get a Bottle</button>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <div class="foot-brand">
+        <span class="logo">LODESTAR</span>
+        <span class="foot-mid">Ember · Cold-Smoked Herbal Aperitivo · Batch 07 · 18% ABV</span>
+      </div>
+      <form class="signup" id="signup" novalidate>
+        <label class="signup-label" for="email">Fire letters, once a month</label>
+        <div class="signup-row">
+          <input type="email" id="email" name="email" placeholder="you@somewhere.com" autocomplete="email">
+          <button class="btn ghost" type="submit">Join</button>
+        </div>
+        <p class="signup-msg" id="signupMsg"></p>
+      </form>
+      <span class="foot-note">Sip slowly. Sip responsibly.</span>
+      <a class="credit" href="https://makewebb.vercel.app" target="_blank" rel="noopener">Built by <em>makewebb</em></a>
+    </footer>
+
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.152.2/three.min.js" crossorigin="anonymous"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
